@@ -27,6 +27,43 @@ which, ultimately, result in the following Build Variants:
 To change the Build Variant, go to Build -> Select Build Variant and from the tool window you can click on the "Active Build Variant" of the module ":app" and select the one you prefer.
 It will automatically apply it to the other modules as well.
 
+### One-click clean, build, and install from Android Studio
+
+The project now exposes Gradle wrapper tasks that clean the workspace, build the APK, and install it on a connected device or emulator using adb:
+
+- `buildAndInstallDevDebug`
+- `buildAndInstallDemoDebug`
+
+In Android Studio, open the Gradle tool window and run either task from the `install` group.
+The repository also includes a shared run configuration named `Build and Install Dev Debug` under `.run/`, so the default development flow is available directly from the run configuration picker.
+
+Android Studio Gradle sync itself is still an IDE action rather than a Gradle task. Opening the project or refreshing the Gradle project performs the sync before running these tasks.
+
+### Manual APK install troubleshooting
+
+If Android Studio installs fail or you want to sideload a specific build manually, you can assemble the APK and install it with `adb`.
+
+For example, for the `demoDebug` variant:
+
+```bash
+./gradlew :app:assembleDemoDebug
+adb devices
+adb -s <device-serial> install -r -d app/build/outputs/apk/demo/debug/app-demo-debug.apk
+```
+
+For the `devDebug` variant, use:
+
+```bash
+./gradlew :app:assembleDevDebug
+adb devices
+adb -s <device-serial> install -r -d app/build/outputs/apk/dev/debug/app-dev-debug.apk
+```
+
+Notes:
+- Replace `<device-serial>` with the serial shown by `adb devices`.
+- If `adb` is not on your `PATH`, use the full path to the Android SDK platform-tools `adb` binary instead.
+- The `-r` flag reinstalls the app while keeping app data when possible, and `-d` allows version-code downgrade for local debug builds.
+
 To run the App on a device, firstly you must connect your device with the Android Studio, and then go to Run -> Run 'app'.
 To run the App on an emulator, simply go to Run -> Run 'app'.
 

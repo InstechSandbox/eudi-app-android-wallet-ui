@@ -18,6 +18,7 @@ package eu.europa.ec.corelogic.config
 
 import android.content.Context
 import eu.europa.ec.corelogic.BuildConfig
+import eu.europa.ec.corelogic.authorization.LocalIssuerAuthorizationHandler
 import eu.europa.ec.corelogic.model.DocumentIdentifier
 import eu.europa.ec.eudi.wallet.EudiWalletConfig
 import eu.europa.ec.eudi.wallet.document.CreateDocumentSettings.CredentialPolicy
@@ -25,12 +26,20 @@ import eu.europa.ec.eudi.wallet.issue.openid4vci.OpenId4VciManager
 import eu.europa.ec.eudi.wallet.issue.openid4vci.dpop.DPopConfig
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.ClientIdScheme
 import eu.europa.ec.eudi.wallet.transfer.openId4vp.Format
+import eu.europa.ec.eudi.wallet.transfer.openId4vp.PreregisteredVerifier
 import eu.europa.ec.resourceslogic.R
 import kotlin.time.Duration.Companion.seconds
 
 internal class WalletCoreConfigImpl(
     private val context: Context
 ) : WalletCoreConfig {
+
+    private companion object {
+        const val LOCAL_VERIFIER_API = "https://192.168.0.110"
+        const val LOCAL_VERIFIER_CLIENT_ID = "Verifier"
+        const val LOCAL_VERIFIER_LEGAL_NAME = "Local Verifier"
+        const val LOCAL_ISSUER_CLIENT_ID = "wallet-dev-local"
+    }
 
     private var _config: EudiWalletConfig? = null
 
@@ -46,8 +55,15 @@ internal class WalletCoreConfigImpl(
                     configureOpenId4Vp {
                         withClientIdSchemes(
                             listOf(
-                                ClientIdScheme.X509SanDns,
-                                ClientIdScheme.X509Hash
+                                ClientIdScheme.Preregistered(
+                                    listOf(
+                                        PreregisteredVerifier(
+                                            clientId = LOCAL_VERIFIER_CLIENT_ID,
+                                            verifierApi = LOCAL_VERIFIER_API,
+                                            legalName = LOCAL_VERIFIER_LEGAL_NAME
+                                        )
+                                    )
+                                )
                             )
                         )
                         withSchemes(
@@ -101,6 +117,24 @@ internal class WalletCoreConfigImpl(
                     .withDPopConfig(DPopConfig.Default)
                     .build(),
                 order = 1
+            ),
+            VciConfig(
+                config = OpenId4VciManager.Config.Builder()
+                    .withIssuerUrl(issuerUrl = "https://192.168.0.110:5003")
+                    .withClientAuthenticationType(
+                        OpenId4VciManager.ClientAuthenticationType.None(LOCAL_ISSUER_CLIENT_ID)
+                    )
+                    .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
+                    .withAuthorizationHandler(
+                        LocalIssuerAuthorizationHandler(
+                            context = context,
+                            redirectUri = BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK,
+                        )
+                    )
+                    .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
+                    .withDPopConfig(DPopConfig.Default)
+                    .build(),
+                order = 2
             )
         )
 

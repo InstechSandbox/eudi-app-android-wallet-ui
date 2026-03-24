@@ -14,4 +14,21 @@
   ~ governing permissions and limitations under the Licence.
   -->
 
-<manifest />
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:label="EUDI Wallet"
+        android:icon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.EUDIWallet">
+        <!-- Add other application components here as needed -->
+      <activity android:name="eu.europa.ec.assemblylogic.ui.MainActivity"
+        android:exported="true">
+        <intent-filter>
+          <data android:scheme="eu.europa.ec.euidi" android:host="authorization"/>
+          <action android:name="android.intent.action.VIEW"/>
+          <category android:name="android.intent.category.DEFAULT"/>
+          <category android:name="android.intent.category.BROWSABLE"/>
+        </intent-filter>
+      </activity>
+    </application>
+</manifest>

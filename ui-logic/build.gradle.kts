@@ -42,6 +42,7 @@ dependencies {
 
     implementation(libs.zxing)
     implementation(libs.gson)
+    implementation(libs.androidx.browser)
 
     testImplementation(project(LibraryModule.TestLogic.path))
 }

@@ -29,6 +29,7 @@ import eu.europa.ec.commonfeature.config.OfferCodeUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.issuancefeature.BuildConfig
 import eu.europa.ec.issuancefeature.ui.add.AddDocumentScreen
+import eu.europa.ec.issuancefeature.ui.add.AddDocumentViewModel
 import eu.europa.ec.issuancefeature.ui.code.DocumentOfferCodeScreen
 import eu.europa.ec.issuancefeature.ui.offer.DocumentOfferScreen
 import eu.europa.ec.issuancefeature.ui.success.DocumentIssuanceSuccessScreen
@@ -59,11 +60,13 @@ fun NavGraphBuilder.featureIssuanceGraph(navController: NavController) {
         ) {
             AddDocumentScreen(
                 navController,
-                koinViewModel(
-                    parameters = {
-                        parametersOf(
-                            it.arguments?.getString(IssuanceUiConfig.serializedKeyName).orEmpty()
-                        )
+                koinViewModel<AddDocumentViewModel>(
+                    parameters = it?.let {
+                        {
+                            parametersOf(
+                                it.arguments?.getString(IssuanceUiConfig.serializedKeyName).orEmpty()
+                            )
+                        }
                     }
                 )
             )

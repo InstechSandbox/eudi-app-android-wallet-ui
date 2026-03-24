@@ -24,6 +24,9 @@ plugins {
 }
 
 extensions.configure<LibraryExtension>("android") {
+    buildFeatures {
+        buildConfig = true
+    }
     namespace = "eu.europa.ec.issuancefeature"
 }
 

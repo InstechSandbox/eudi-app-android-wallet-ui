@@ -16,4 +16,10 @@
 
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="false">192.168.0.110</domain>
+        <trust-anchors>
+            <certificates src="@raw/backend_cert" />
+        </trust-anchors>
+    </domain-config>
 </network-security-config>

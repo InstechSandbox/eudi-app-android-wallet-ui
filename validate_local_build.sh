@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -eu
+
+repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$repo_dir"
+
+gradle_user_home=${GRADLE_USER_HOME:-$repo_dir/.gradle-validate}
+wallet_variant=${WALLET_VARIANT:-DevDebug}
+
+export GRADLE_USER_HOME="$gradle_user_home"
+
+./gradlew --no-daemon workspaceClean ":app:assemble${wallet_variant}"
+
+printf 'Validated wallet variant %s with GRADLE_USER_HOME=%s\n' "$wallet_variant" "$GRADLE_USER_HOME"
