@@ -34,6 +34,7 @@ moduleConfig {
 
 dependencies {
     implementation(project(LibraryModule.BusinessLogic.path))
+    implementation(libs.ktor.okhttp)
     testImplementation(project(LibraryModule.TestLogic.path))
 }
 

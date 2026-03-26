@@ -147,6 +147,14 @@ To delete a document, navigate to the 'Documents' tab within the 'Dashboard' scr
 
 [This document](wiki/how_to_build.md) describes how you can build the application and deploy the issuing and verification services locally.
 
+## Validation Smoke Test
+
+The repository includes [validate_local_build.sh](validate_local_build.sh) for local validation.
+
+The current smoke phase is intentionally limited: it builds the selected wallet APK variant and then verifies that the expected APK artifact exists on disk. It does not yet drive a device or emulator through credential issuance or presentation.
+
+If the build or artifact check fails, the script exits non-zero. There is no service teardown step in this repository because the current wallet smoke phase does not start a long-running process.
+
 ## Application configuration
 
 You can find instructions on how to configure the application [here](wiki/configuration.md)

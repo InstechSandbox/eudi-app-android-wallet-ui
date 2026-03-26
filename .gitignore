@@ -37,6 +37,7 @@ local.properties
 
 # Gradle cache
 .gradle
+.gradle-validate/
 
 # Android Studio captures folder
 captures/

@@ -30,12 +30,12 @@ import eu.europa.ec.corelogic.controller.WalletCoreTransactionLogControllerImpl
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProvider
 import eu.europa.ec.corelogic.provider.WalletCoreAttestationProviderImpl
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.networklogic.di.createWalletCoreHttpClient
 import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import eu.europa.ec.storagelogic.dao.BookmarkDao
 import eu.europa.ec.storagelogic.dao.RevokedDocumentDao
 import eu.europa.ec.storagelogic.dao.TransactionLogDao
-import io.ktor.client.HttpClient
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Factory
 import org.koin.core.annotation.Module
@@ -56,7 +56,6 @@ fun provideEudiWallet(
     walletCoreLogController: WalletCoreLogController,
     walletCoreTransactionLogController: WalletCoreTransactionLogController,
     walletCoreAttestationProvider: WalletCoreAttestationProvider,
-    httpClient: HttpClient
 ): EudiWallet = EudiWallet(
     context = context,
     config = walletCoreConfig.config,
@@ -64,7 +63,7 @@ fun provideEudiWallet(
 ) {
     withLogger(walletCoreLogController)
     withTransactionLogger(walletCoreTransactionLogController)
-    withKtorHttpClientFactory { httpClient }
+    withKtorHttpClientFactory { createWalletCoreHttpClient(context) }
 }
 
 @Single

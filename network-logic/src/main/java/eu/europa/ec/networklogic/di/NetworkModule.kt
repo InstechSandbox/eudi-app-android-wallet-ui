@@ -17,6 +17,7 @@
 package eu.europa.ec.networklogic.di
 
 import android.content.Context
+import android.net.http.X509TrustManagerExtensions
 import android.util.Log
 import eu.europa.ec.businesslogic.config.AppBuildType
 import eu.europa.ec.businesslogic.config.ConfigLogic
@@ -25,6 +26,7 @@ import eu.europa.ec.networklogic.repository.WalletAttestationRepository
 import eu.europa.ec.networklogic.repository.WalletAttestationRepositoryImpl
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.logging.DEFAULT
@@ -56,6 +58,21 @@ fun provideJson(): Json = Json {
     ignoreUnknownKeys = true
     prettyPrint = true
     isLenient = true
+}
+
+fun createWalletCoreHttpClient(context: Context): HttpClient {
+    val localAwareTrustManager = createLocalAwareTrustManager(context)
+    val sslSocketFactory = SSLContext.getInstance("TLS").apply {
+        init(null, arrayOf<TrustManager>(localAwareTrustManager), SecureRandom())
+    }.socketFactory
+
+    return HttpClient(OkHttp) {
+        engine {
+            config {
+                sslSocketFactory(sslSocketFactory, localAwareTrustManager)
+            }
+        }
+    }
 }
 
 @Single
@@ -105,16 +122,16 @@ fun provideHttpClient(json: Json, configLogic: ConfigLogic, context: Context): H
 }
 
 private fun createLocalAwareTrustManager(context: Context): X509TrustManager {
+    val localCertificate = loadLocalBackendCertificate(context)
     val systemTrustManager = createTrustManager(null)
+    val systemTrustManagerExtensions = X509TrustManagerExtensions(systemTrustManager)
     val localTrustManager = createTrustManager(
         KeyStore.getInstance(KeyStore.getDefaultType()).apply {
             load(null, null)
-            val certificate = context.resources.openRawResource(R.raw.backend_cert).use { inputStream ->
-                CertificateFactory.getInstance("X.509").generateCertificate(inputStream)
-            }
-            setCertificateEntry("local-backend-cert", certificate)
+            setCertificateEntry("local-backend-cert", localCertificate)
         }
     )
+    val localTrustManagerExtensions = X509TrustManagerExtensions(localTrustManager)
 
     return object : X509TrustManager {
         override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {
@@ -128,8 +145,35 @@ private fun createLocalAwareTrustManager(context: Context): X509TrustManager {
         override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {
             try {
                 systemTrustManager.checkServerTrusted(chain, authType)
-            } catch (_: CertificateException) {
-                localTrustManager.checkServerTrusted(chain, authType)
+            } catch (systemError: CertificateException) {
+                val trustedLocalCertificate = chain.firstOrNull()?.encoded?.contentEquals(localCertificate.encoded) == true
+                if (trustedLocalCertificate) {
+                    return
+                }
+
+                try {
+                    localTrustManager.checkServerTrusted(chain, authType)
+                } catch (_: CertificateException) {
+                    throw systemError
+                }
+            }
+        }
+
+        @Suppress("unused")
+        fun checkServerTrusted(chain: Array<X509Certificate>, authType: String, host: String): List<X509Certificate> {
+            return try {
+                systemTrustManagerExtensions.checkServerTrusted(chain, authType, host)
+            } catch (systemError: CertificateException) {
+                val trustedLocalCertificate = chain.firstOrNull()?.encoded?.contentEquals(localCertificate.encoded) == true
+                if (trustedLocalCertificate) {
+                    chain.toList()
+                } else {
+                    try {
+                        localTrustManagerExtensions.checkServerTrusted(chain, authType, host)
+                    } catch (_: CertificateException) {
+                        throw systemError
+                    }
+                }
             }
         }
 
@@ -137,6 +181,11 @@ private fun createLocalAwareTrustManager(context: Context): X509TrustManager {
             systemTrustManager.acceptedIssuers + localTrustManager.acceptedIssuers
     }
 }
+
+private fun loadLocalBackendCertificate(context: Context): X509Certificate =
+    context.resources.openRawResource(R.raw.backend_cert).use { inputStream ->
+        CertificateFactory.getInstance("X.509").generateCertificate(inputStream) as X509Certificate
+    }
 
 private fun createTrustManager(keyStore: KeyStore?): X509TrustManager {
     val trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()).apply {

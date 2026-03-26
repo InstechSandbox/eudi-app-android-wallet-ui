@@ -37,4 +37,12 @@ export GRADLE_USER_HOME="$gradle_user_home"
 
 ./gradlew --no-daemon workspaceClean ":app:assemble${wallet_variant}"
 
-printf 'Validated wallet variant %s with GRADLE_USER_HOME=%s\n' "$wallet_variant" "$GRADLE_USER_HOME"
+wallet_variant_path=$(printf '%s' "$wallet_variant" | sed 's/\([A-Z]\)/ \1/g' | awk '{for (i = 1; i <= NF; i++) printf "%s%s", (i > 1 ? "/" : ""), tolower($i)}')
+wallet_apk=$(find "$repo_dir/app/build/outputs/apk/$wallet_variant_path" -type f -name '*.apk' | head -n 1)
+
+if [ -z "$wallet_apk" ] || [ ! -s "$wallet_apk" ]; then
+	printf 'Wallet smoke test failed: assembled APK for %s was not found\n' "$wallet_variant" >&2
+	exit 1
+fi
+
+printf 'Validated wallet variant %s with artifact smoke test using GRADLE_USER_HOME=%s\n' "$wallet_variant" "$GRADLE_USER_HOME"
