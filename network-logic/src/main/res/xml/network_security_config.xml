@@ -15,11 +15,9 @@
   -->
 
 <network-security-config>
-    <base-config cleartextTrafficPermitted="false" />
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="false">192.168.0.110</domain>
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="@raw/backend_cert" />
         </trust-anchors>
-    </domain-config>
+    </base-config>
 </network-security-config>

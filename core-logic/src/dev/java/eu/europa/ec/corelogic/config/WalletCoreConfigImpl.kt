@@ -35,11 +35,16 @@ internal class WalletCoreConfigImpl(
 ) : WalletCoreConfig {
 
     private companion object {
-        const val LOCAL_VERIFIER_API = "https://192.168.0.110"
         const val LOCAL_VERIFIER_CLIENT_ID = "Verifier"
         const val LOCAL_VERIFIER_LEGAL_NAME = "Local Verifier"
         const val LOCAL_ISSUER_CLIENT_ID = "wallet-dev-local"
     }
+
+    private val localVerifierApi: String
+        get() = BuildConfig.LOCAL_VERIFIER_API
+
+    private val localIssuerUrl: String
+        get() = BuildConfig.LOCAL_ISSUER_URL
 
     private var _config: EudiWalletConfig? = null
 
@@ -59,7 +64,7 @@ internal class WalletCoreConfigImpl(
                                     listOf(
                                         PreregisteredVerifier(
                                             clientId = LOCAL_VERIFIER_CLIENT_ID,
-                                            verifierApi = LOCAL_VERIFIER_API,
+                                            verifierApi = localVerifierApi,
                                             legalName = LOCAL_VERIFIER_LEGAL_NAME
                                         )
                                     )
@@ -120,7 +125,7 @@ internal class WalletCoreConfigImpl(
             ),
             VciConfig(
                 config = OpenId4VciManager.Config.Builder()
-                    .withIssuerUrl(issuerUrl = "https://192.168.0.110:5003")
+                    .withIssuerUrl(issuerUrl = localIssuerUrl)
                     .withClientAuthenticationType(
                         OpenId4VciManager.ClientAuthenticationType.None(LOCAL_ISSUER_CLIENT_ID)
                     )

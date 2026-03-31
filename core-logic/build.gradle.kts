@@ -15,9 +15,15 @@
  */
 
 import com.android.build.api.dsl.LibraryExtension
+import project.convention.logic.addConfigField
 import project.convention.logic.config.LibraryModule
+import project.convention.logic.getProperty
 import project.convention.logic.kover.KoverExclusionRules
 import project.convention.logic.kover.excludeFromKoverReport
+
+val localDemoHost = getProperty<String>("localDemoHost")
+    ?: System.getenv("LOCAL_DEMO_HOST")
+    ?: "127.0.0.1"
 
 plugins {
     id("project.android.library")
@@ -26,6 +32,12 @@ plugins {
 
 extensions.configure<LibraryExtension>("android") {
     namespace = "eu.europa.ec.corelogic"
+
+    defaultConfig {
+        addConfigField("LOCAL_DEMO_HOST", localDemoHost)
+        addConfigField("LOCAL_VERIFIER_API", "https://$localDemoHost")
+        addConfigField("LOCAL_ISSUER_URL", "https://$localDemoHost:5003")
+    }
 }
 
 moduleConfig {
