@@ -1,0 +1,6 @@
+# Copy this file to local.properties and update sdk.dir for your machine.
+sdk.dir=/Users/your-user/Library/Android/sdk
+
+# Optional local workstream host used by the demo wallet build.
+# The shared project-docs wrappers overwrite this as needed for the active LAN IP.
+localDemoHost=127.0.0.1

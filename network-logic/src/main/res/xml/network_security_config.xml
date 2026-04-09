@@ -17,6 +17,7 @@
 <network-security-config>
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
+            <certificates src="system" />
             <certificates src="@raw/backend_cert" />
         </trust-anchors>
     </base-config>
