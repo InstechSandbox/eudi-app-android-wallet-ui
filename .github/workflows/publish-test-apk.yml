@@ -42,12 +42,12 @@ jobs:
 
       - name: Restore Android signing keystore
         env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_HEX: ${{ secrets.ANDROID_KEYSTORE_HEX }}
         run: |
           [[ -n "$ANDROID_KEY_ALIAS" ]]
           [[ -n "$ANDROID_KEY_PASSWORD" ]]
-          [[ -n "$ANDROID_KEYSTORE_BASE64" ]]
-          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > sign
+          [[ -n "$ANDROID_KEYSTORE_HEX" ]]
+          printf '%s' "$ANDROID_KEYSTORE_HEX" | xxd -r -p > sign
 
       - name: Build demo release APK
         run: ./gradlew -x workspaceClean :app:assembleDemoRelease --console=plain
