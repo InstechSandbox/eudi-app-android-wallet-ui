@@ -44,6 +44,10 @@ jobs:
         run: |
           [[ -n "$ANDROID_KEY_ALIAS" ]]
           [[ -n "$ANDROID_KEY_PASSWORD" ]]
+          if [[ ${#ANDROID_KEY_PASSWORD} -lt 6 ]]; then
+            echo "ANDROID_KEY_PASSWORD must be at least 6 characters for keytool/JKS generation" >&2
+            exit 1
+          fi
           keytool -genkeypair \
             -storetype JKS \
             -keystore sign \
