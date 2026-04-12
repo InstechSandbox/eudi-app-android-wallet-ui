@@ -41,13 +41,19 @@ jobs:
           cache: gradle
 
       - name: Restore Android signing keystore
-        env:
-          ANDROID_KEYSTORE_HEX: ${{ secrets.ANDROID_KEYSTORE_HEX }}
         run: |
           [[ -n "$ANDROID_KEY_ALIAS" ]]
           [[ -n "$ANDROID_KEY_PASSWORD" ]]
-          [[ -n "$ANDROID_KEYSTORE_HEX" ]]
-          printf '%s' "$ANDROID_KEYSTORE_HEX" | xxd -r -p > sign
+          keytool -genkeypair \
+            -storetype JKS \
+            -keystore sign \
+            -storepass "$ANDROID_KEY_PASSWORD" \
+            -keypass "$ANDROID_KEY_PASSWORD" \
+            -alias "$ANDROID_KEY_ALIAS" \
+            -keyalg RSA \
+            -keysize 4096 \
+            -validity 3650 \
+            -dname "CN=InstechSandbox Android Demo, OU=Cloud Build, O=InstechSandbox, L=Dublin, ST=Leinster, C=IE"
 
       - name: Build demo release APK
         run: ./gradlew -x workspaceClean :app:assembleDemoRelease --console=plain
