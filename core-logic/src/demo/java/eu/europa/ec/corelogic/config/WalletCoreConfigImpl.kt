@@ -33,18 +33,11 @@ import kotlin.time.Duration.Companion.seconds
 internal class WalletCoreConfigImpl(
     private val context: Context
 ) : WalletCoreConfig {
+    private val verifierApi: String
+        get() = BuildConfig.VERIFIER_API
 
-    private companion object {
-        const val LOCAL_VERIFIER_CLIENT_ID = "Verifier"
-        const val LOCAL_VERIFIER_LEGAL_NAME = "Local Verifier"
-        const val LOCAL_ISSUER_CLIENT_ID = "wallet-dev-local"
-    }
-
-    private val localVerifierApi: String
-        get() = BuildConfig.LOCAL_VERIFIER_API
-
-    private val localIssuerUrl: String
-        get() = BuildConfig.LOCAL_ISSUER_URL
+    private val issuerUrl: String
+        get() = BuildConfig.ISSUER_URL
 
     private var _config: EudiWalletConfig? = null
 
@@ -63,9 +56,9 @@ internal class WalletCoreConfigImpl(
                                 ClientIdScheme.Preregistered(
                                     listOf(
                                         PreregisteredVerifier(
-                                            clientId = LOCAL_VERIFIER_CLIENT_ID,
-                                            verifierApi = localVerifierApi,
-                                            legalName = LOCAL_VERIFIER_LEGAL_NAME
+                                            clientId = BuildConfig.VERIFIER_CLIENT_ID,
+                                            verifierApi = verifierApi,
+                                            legalName = BuildConfig.VERIFIER_LEGAL_NAME
                                         )
                                     )
                                 )
@@ -125,9 +118,9 @@ internal class WalletCoreConfigImpl(
             ),
             VciConfig(
                 config = OpenId4VciManager.Config.Builder()
-                    .withIssuerUrl(issuerUrl = localIssuerUrl)
+                    .withIssuerUrl(issuerUrl = issuerUrl)
                     .withClientAuthenticationType(
-                        OpenId4VciManager.ClientAuthenticationType.None(LOCAL_ISSUER_CLIENT_ID)
+                        OpenId4VciManager.ClientAuthenticationType.None(BuildConfig.ISSUER_CLIENT_ID)
                     )
                     .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
                     .withAuthorizationHandler(

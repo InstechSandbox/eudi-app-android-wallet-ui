@@ -47,7 +47,6 @@ fun registerBuildAndInstallTask(
     taskName: String,
     variantName: String,
     flavorName: String,
-    uninstallTaskName: String,
 ) {
     val assembleTaskName = "assemble${variantName}"
     val installTaskName = "install${variantName}"
@@ -56,17 +55,12 @@ fun registerBuildAndInstallTask(
         if (name == assembleTaskName) {
             dependsOn(workspaceClean)
         }
-
-        if (name == installTaskName) {
-            mustRunAfter(":app:${uninstallTaskName}")
-        }
     }
 
     tasks.register(taskName) {
         group = "install"
-        description = "Cleans the workspace, removes the conflicting wallet flavor, assembles the ${flavorName} debug APK, and installs it on a connected device via adb."
+        description = "Cleans the workspace, assembles the ${flavorName} debug APK, and installs it on a connected device via adb without removing the other flavor."
         dependsOn(
-            ":app:${uninstallTaskName}",
             ":app:${installTaskName}",
         )
     }
@@ -76,14 +70,12 @@ registerBuildAndInstallTask(
     taskName = "buildAndInstallDevDebug",
     variantName = "DevDebug",
     flavorName = "Dev",
-    uninstallTaskName = "uninstallDemoDebug",
 )
 
 registerBuildAndInstallTask(
     taskName = "buildAndInstallDemoDebug",
     variantName = "DemoDebug",
     flavorName = "Demo",
-    uninstallTaskName = "uninstallDevDebug",
 )
 
 true

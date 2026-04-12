@@ -13,12 +13,23 @@ Clone the [Android repository](https://github.com/eu-digital-identity-wallet/eud
 Open the project in Android Studio.
 
 The application has two product flavors:
-- "Dev", which communicates with the services deployed in an environment based on the latest main branch.
-- "Demo", which communicates with the services deployed in an environment based on the latest main branch.
+- "Dev", which is the local engineering build in this workspace and should target the local issuer and local verifier hosts on your LAN.
+- "Demo", which is the shared test build in this workspace and should target the public cloud issuer and verifier hosts.
 
 and two Build Types:
 - "Debug", which has full logging enabled.
 - "Release", which has no logging enabled.
+
+For the Instech cloud-build workflow, treat the flavors like this:
+
+- `devDebug` or `devRelease`: local-device and local-reader validation against the local stack
+- `demoDebug`: shared-cloud smoke build for ad hoc tester installs
+- `demoRelease`: GitHub-driven cloud tester build for publication through GitHub Releases
+
+The launcher labels are intentionally different so both variants can stay installed on one device:
+
+- Dev installs as `EUDI Wallet Local`
+- Demo installs as `EUDI Wallet Test`
 
 which, ultimately, result in the following Build Variants:
 
@@ -72,6 +83,12 @@ The app is configured to use some configuration in the two ***ConfigWalletCoreIm
 *src\dev\java\eu\europa\ec\corelogic\config* or
 *src\demo\java\eu\europa\ec\corelogic\config*,
 depending on the flavor of your choice).
+
+For document readers and verifier flows, the environment split matters:
+
+- local reader and verifier requests are environment-bound to the `Dev` flavor build because that build bakes the current LAN verifier and issuer URLs into `BuildConfig`
+- shared cloud reader and verifier requests are environment-bound to the `Demo` flavor build because that build bakes the public `test.instech-eudi-poc.com` hosts into `BuildConfig`
+- do not use the local `Dev` APK against the public verifier or issuer, and do not use the cloud `Demo` APK against the local verifier stack, because the preregistered verifier and redirect expectations are not interchangeable
 
 These are the contents of the ConfigWalletCoreImpl file (dev flavor), and you don't need to change anything:
 

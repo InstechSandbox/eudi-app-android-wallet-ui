@@ -33,8 +33,15 @@ enum class AppFlavor(
     val applicationIdSuffix: String? = null,
     val applicationNameSuffix: String? = null
 ) {
-    Dev(FlavorDimension.contentType, applicationIdSuffix = ".dev"),
-    Demo(FlavorDimension.contentType)
+    Dev(
+        FlavorDimension.contentType,
+        applicationIdSuffix = ".dev",
+        applicationNameSuffix = " Local"
+    ),
+    Demo(
+        FlavorDimension.contentType,
+        applicationNameSuffix = " Test"
+    )
 }
 
 fun Project.configureFlavors(

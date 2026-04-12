@@ -17,7 +17,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:networkSecurityConfig="@xml/network_security_config"
-        android:label="EUDI Wallet"
+    android:label="EUDI Wallet${appNameSuffix}"
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/Theme.EUDIWallet">
         <!-- Add other application components here as needed -->

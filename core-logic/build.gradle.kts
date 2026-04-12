@@ -24,6 +24,36 @@ import project.convention.logic.kover.excludeFromKoverReport
 val localDemoHost = getProperty<String>("localDemoHost")
     ?: System.getenv("LOCAL_DEMO_HOST")
     ?: "127.0.0.1"
+val localVerifierApi = getProperty<String>("localVerifierApi")
+    ?: System.getenv("LOCAL_VERIFIER_API")
+    ?: "https://$localDemoHost"
+val localIssuerUrl = getProperty<String>("localIssuerUrl")
+    ?: System.getenv("LOCAL_ISSUER_URL")
+    ?: "https://$localDemoHost:5003"
+val testVerifierApi = getProperty<String>("testVerifierApi")
+    ?: System.getenv("TEST_VERIFIER_API")
+    ?: "https://verifier.test.instech-eudi-poc.com"
+val testIssuerUrl = getProperty<String>("testIssuerUrl")
+    ?: System.getenv("TEST_ISSUER_URL")
+    ?: "https://issuer.test.instech-eudi-poc.com"
+val localVerifierClientId = getProperty<String>("localVerifierClientId")
+    ?: System.getenv("LOCAL_VERIFIER_CLIENT_ID")
+    ?: "Verifier"
+val testVerifierClientId = getProperty<String>("testVerifierClientId")
+    ?: System.getenv("TEST_VERIFIER_CLIENT_ID")
+    ?: "Verifier"
+val localVerifierLegalName = getProperty<String>("localVerifierLegalName")
+    ?: System.getenv("LOCAL_VERIFIER_LEGAL_NAME")
+    ?: "Local Verifier"
+val testVerifierLegalName = getProperty<String>("testVerifierLegalName")
+    ?: System.getenv("TEST_VERIFIER_LEGAL_NAME")
+    ?: "Instech Test Verifier"
+val localIssuerClientId = getProperty<String>("localIssuerClientId")
+    ?: System.getenv("LOCAL_ISSUER_CLIENT_ID")
+    ?: "wallet-dev-local"
+val testIssuerClientId = getProperty<String>("testIssuerClientId")
+    ?: System.getenv("TEST_ISSUER_CLIENT_ID")
+    ?: "wallet-dev-local"
 
 plugins {
     id("project.android.library")
@@ -35,8 +65,26 @@ extensions.configure<LibraryExtension>("android") {
 
     defaultConfig {
         addConfigField("LOCAL_DEMO_HOST", localDemoHost)
-        addConfigField("LOCAL_VERIFIER_API", "https://$localDemoHost")
-        addConfigField("LOCAL_ISSUER_URL", "https://$localDemoHost:5003")
+    }
+
+    productFlavors {
+        named("dev") {
+            addConfigField("APP_ENVIRONMENT", "local")
+            addConfigField("VERIFIER_API", localVerifierApi)
+            addConfigField("ISSUER_URL", localIssuerUrl)
+            addConfigField("VERIFIER_CLIENT_ID", localVerifierClientId)
+            addConfigField("VERIFIER_LEGAL_NAME", localVerifierLegalName)
+            addConfigField("ISSUER_CLIENT_ID", localIssuerClientId)
+        }
+
+        named("demo") {
+            addConfigField("APP_ENVIRONMENT", "test")
+            addConfigField("VERIFIER_API", testVerifierApi)
+            addConfigField("ISSUER_URL", testIssuerUrl)
+            addConfigField("VERIFIER_CLIENT_ID", testVerifierClientId)
+            addConfigField("VERIFIER_LEGAL_NAME", testVerifierLegalName)
+            addConfigField("ISSUER_CLIENT_ID", testIssuerClientId)
+        }
     }
 }
 
