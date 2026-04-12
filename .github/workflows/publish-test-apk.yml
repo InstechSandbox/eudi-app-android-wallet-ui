@@ -33,13 +33,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check out project docs
-        uses: actions/checkout@v4
-        with:
-          repository: InstechSandbox/project-docs
-          path: project-docs
-          token: ${{ secrets.PROJECT_DOCS_REPO_TOKEN || github.token }}
-
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -61,18 +54,48 @@ jobs:
 
       - name: Generate Android compliance bundle
         env:
-          CODE_ROOT: ${{ github.workspace }}
-          WALLET_REPO: ${{ github.workspace }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          bash project-docs/scripts/generate-mobile-compliance-bundle.sh android "${{ inputs.release_tag }}"
+          set -euo pipefail
+
+          bundle_dir=".local/mobile-compliance/${RELEASE_TAG}-android"
+          mkdir -p "$bundle_dir"
+
+          cp LICENSE.txt "$bundle_dir/LICENSE.txt"
+          cp NOTICE.txt "$bundle_dir/NOTICE.txt"
+          cp gradle/libs.versions.toml "$bundle_dir/libs.versions.toml"
+
+          git remote get-url origin > "$bundle_dir/source-repository.txt"
+          git rev-parse HEAD > "$bundle_dir/source-commit.txt"
+
+          cat > "$bundle_dir/release-record.md" <<EOF
+          # Android Release Record
+
+          - Release tag: ${RELEASE_TAG}
+          - Release name: ${{ inputs.release_name || inputs.release_tag }}
+          - Repository: $(git remote get-url origin)
+          - Commit: $(git rev-parse HEAD)
+          - Build date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
+          - Distribution status: proof-of-concept tester prerelease
+
+          ## Included notices
+
+          - LICENSE.txt
+          - NOTICE.txt
+          - gradle/libs.versions.toml
+
+          ## Notes
+
+          This sidecar is generated directly from the Android wallet repository so the tester APK release remains self-contained even when cross-repository compliance helpers are unavailable in GitHub Actions.
+          EOF
 
       - name: Archive compliance bundle
         run: |
-          bundle_dir="project-docs/.local/mobile-compliance/${{ inputs.release_tag }}-android"
-          cd project-docs/.local/mobile-compliance
+          bundle_dir=".local/mobile-compliance/${{ inputs.release_tag }}-android"
+          cd .local/mobile-compliance
           zip -r "${{ inputs.release_tag }}-android-compliance.zip" "${{ inputs.release_tag }}-android"
           cd - >/dev/null
-          echo "COMPLIANCE_ZIP=project-docs/.local/mobile-compliance/${{ inputs.release_tag }}-android-compliance.zip" >> "$GITHUB_ENV"
+          echo "COMPLIANCE_ZIP=.local/mobile-compliance/${{ inputs.release_tag }}-android-compliance.zip" >> "$GITHUB_ENV"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
