@@ -39,6 +39,13 @@ internal class WalletCoreConfigImpl(
     private val issuerUrl: String
         get() = BuildConfig.ISSUER_URL
 
+    private val optionalLocalReaderTrustRootId: Int
+        get() = context.resources.getIdentifier(
+            "pidissuerca_local_ut",
+            "raw",
+            context.packageName
+        )
+
     private var _config: EudiWalletConfig? = null
 
     override val config: EudiWalletConfig
@@ -77,8 +84,11 @@ internal class WalletCoreConfigImpl(
                         )
                     }
 
-                    configureReaderTrustStore(
-                        context,
+                    val trustedReaderCertificates = mutableListOf<Int>()
+                    if (optionalLocalReaderTrustRootId != 0) {
+                        trustedReaderCertificates += optionalLocalReaderTrustRootId
+                    }
+                    trustedReaderCertificates += listOf(
                         R.raw.pidissuerca02_cz,
                         R.raw.pidissuerca02_ee,
                         R.raw.pidissuerca02_eu,
@@ -87,7 +97,12 @@ internal class WalletCoreConfigImpl(
                         R.raw.pidissuerca02_pt,
                         R.raw.pidissuerca02_ut,
                         R.raw.dc4eu,
-                        R.raw.r45_staging
+                        R.raw.r45_staging,
+                    )
+
+                    configureReaderTrustStore(
+                        context,
+                        *trustedReaderCertificates.toIntArray()
                     )
                 }
             }

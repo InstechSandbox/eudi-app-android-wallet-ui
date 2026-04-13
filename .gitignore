@@ -55,3 +55,6 @@ fastlane/report.xml
 
 # extensions
 *.apk
+
+# Local mdoc trust root used only for local demo builds.
+resources-logic/src/main/res/raw/pidissuerca_local_ut.pem
