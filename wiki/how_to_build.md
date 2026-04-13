@@ -50,6 +50,14 @@ The repository also includes a shared run configuration named `Build and Install
 
 Android Studio Gradle sync itself is still an IDE action rather than a Gradle task. Opening the project or refreshing the Gradle project performs the sync before running these tasks.
 
+For local phone testing in this workspace, the default install command is:
+
+```bash
+LOCAL_DEMO_HOST="$(ipconfig getifaddr en0 || ipconfig getifaddr en1)" ./gradlew buildAndInstallDevDebug --console=plain
+```
+
+That builds the local `Dev` wallet, points it at the current LAN-backed local stack, and installs it without replacing the cloud `Demo` app.
+
 ### Manual APK install troubleshooting
 
 If Android Studio installs fail or you want to sideload a specific build manually, you can assemble the APK and install it with `adb`.
@@ -109,72 +117,17 @@ override val issuersConfig: List<VciConfig>
 ```
 
 ### Running with local services
-The first step here is to have all three services running locally on your machine,
-you can follow these Repositories for further instructions:
-* [Issuer](https://github.com/eu-digital-identity-wallet/eudi-srv-web-issuing-eudiw-py)
-* [Web Verifier UI](https://github.com/eu-digital-identity-wallet/eudi-web-verifier)
-* [Web Verifier Endpoint](https://github.com/eu-digital-identity-wallet/eudi-srv-web-verifier-endpoint-23220-4-kt)
+The first step here is to have the issuer and verifier services running locally. In the Instech cloud-build workspace, use the shared wrapper flow instead of hand-editing wallet source files:
 
-
-After this, and assuming you are now running everything locally,
-you need to change the contents of the ConfigWalletCoreImpl file, from:
-
-```kotlin
-override val issuersConfig: List<VciConfig>
-    get() = listOf(
-       VciConfig(
-          config = OpenId4VciManager.Config.Builder()
-             .withIssuerUrl(issuerUrl = "https://ec.dev.issuer.eudiw.dev")
-             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-             .withDPopConfig(DPopConfig.Default)
-             .build(),
-          order = 0
-       )
-)
+```bash
+cd "$CODE_ROOT/project-docs/scripts"
+./build-local-all.sh
+./start-local-all.sh
+./smoke-local-all.sh
+./install-wallet-local-apk.sh --fresh
 ```
 
-with this:
-
-```kotlin
-override val issuersConfig: List<VciConfig>
-    get() = listOf(
-       VciConfig(
-          config = OpenId4VciManager.Config.Builder()
-             .withIssuerUrl(issuerUrl = "local_IP_address_of_issuer")
-             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-             .withDPopConfig(DPopConfig.Default)
-             .build(),
-          order = 0
-       )
-)
-```
-
-for example:
-
-```kotlin
-override val issuersConfig: List<VciConfig>
-    get() = listOf(
-       VciConfig(
-          config = OpenId4VciManager.Config.Builder()
-             .withIssuerUrl(issuerUrl = "https://10.0.2.2")
-             .withClientAuthenticationType(OpenId4VciManager.ClientAuthenticationType.AttestationBased)
-             .withAuthFlowRedirectionURI(BuildConfig.ISSUE_AUTHORIZATION_DEEPLINK)
-             .withParUsage(OpenId4VciManager.Config.ParUsage.IF_SUPPORTED)
-             .withDPopConfig(DPopConfig.Default)
-             .build(),
-          order = 0
-       )
-)
-```
-
-## Why 10.0.2.2?
-
-When using the Android emulator, 10.0.2.2 is a special alias that routes to localhost on your development machine.
-So if you’re running the issuer locally on your host, the emulator can access it via https://10.0.2.2.
+Do not hand-edit `ConfigWalletCoreImpl.kt` for the normal local-versus-cloud switch in this workspace. The `Dev` and `Demo` flavors already carry that environment split.
 
 ## How to work with self-signed certificates
 
