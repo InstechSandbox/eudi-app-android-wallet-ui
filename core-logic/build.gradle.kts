@@ -51,6 +51,21 @@ val testVerifierLegalName = getProperty<String>("testVerifierLegalName")
 val localIssuerClientId = getProperty<String>("localIssuerClientId")
     ?: System.getenv("LOCAL_ISSUER_CLIENT_ID")
     ?: "wallet-dev-local"
+val demoVerifierApi = getProperty<String>("demoVerifierApi")
+    ?: System.getenv("DEMO_VERIFIER_API")
+    ?: localVerifierApi
+val demoIssuerUrl = getProperty<String>("demoIssuerUrl")
+    ?: System.getenv("DEMO_ISSUER_URL")
+    ?: localIssuerUrl
+val demoVerifierClientId = getProperty<String>("demoVerifierClientId")
+    ?: System.getenv("DEMO_VERIFIER_CLIENT_ID")
+    ?: localVerifierClientId
+val demoVerifierLegalName = getProperty<String>("demoVerifierLegalName")
+    ?: System.getenv("DEMO_VERIFIER_LEGAL_NAME")
+    ?: localVerifierLegalName
+val demoIssuerClientId = getProperty<String>("demoIssuerClientId")
+    ?: System.getenv("DEMO_ISSUER_CLIENT_ID")
+    ?: localIssuerClientId
 val testIssuerClientId = getProperty<String>("testIssuerClientId")
     ?: System.getenv("TEST_ISSUER_CLIENT_ID")
     ?: "wallet-dev-local"
@@ -79,11 +94,11 @@ extensions.configure<LibraryExtension>("android") {
 
         named("demo") {
             addConfigField("APP_ENVIRONMENT", "test")
-            addConfigField("VERIFIER_API", testVerifierApi)
-            addConfigField("ISSUER_URL", testIssuerUrl)
-            addConfigField("VERIFIER_CLIENT_ID", testVerifierClientId)
-            addConfigField("VERIFIER_LEGAL_NAME", testVerifierLegalName)
-            addConfigField("ISSUER_CLIENT_ID", testIssuerClientId)
+            addConfigField("VERIFIER_API", demoVerifierApi)
+            addConfigField("ISSUER_URL", demoIssuerUrl)
+            addConfigField("VERIFIER_CLIENT_ID", demoVerifierClientId)
+            addConfigField("VERIFIER_LEGAL_NAME", demoVerifierLegalName)
+            addConfigField("ISSUER_CLIENT_ID", demoIssuerClientId)
         }
     }
 }
