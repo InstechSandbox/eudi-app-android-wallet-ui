@@ -51,24 +51,24 @@ val testVerifierLegalName = getProperty<String>("testVerifierLegalName")
 val localIssuerClientId = getProperty<String>("localIssuerClientId")
     ?: System.getenv("LOCAL_ISSUER_CLIENT_ID")
     ?: "wallet-dev-local"
-val demoVerifierApi = getProperty<String>("demoVerifierApi")
-    ?: System.getenv("DEMO_VERIFIER_API")
-    ?: localVerifierApi
-val demoIssuerUrl = getProperty<String>("demoIssuerUrl")
-    ?: System.getenv("DEMO_ISSUER_URL")
-    ?: localIssuerUrl
-val demoVerifierClientId = getProperty<String>("demoVerifierClientId")
-    ?: System.getenv("DEMO_VERIFIER_CLIENT_ID")
-    ?: localVerifierClientId
-val demoVerifierLegalName = getProperty<String>("demoVerifierLegalName")
-    ?: System.getenv("DEMO_VERIFIER_LEGAL_NAME")
-    ?: localVerifierLegalName
-val demoIssuerClientId = getProperty<String>("demoIssuerClientId")
-    ?: System.getenv("DEMO_ISSUER_CLIENT_ID")
-    ?: localIssuerClientId
 val testIssuerClientId = getProperty<String>("testIssuerClientId")
     ?: System.getenv("TEST_ISSUER_CLIENT_ID")
     ?: "wallet-dev-local"
+val demoVerifierApi = getProperty<String>("demoVerifierApi")
+    ?: System.getenv("DEMO_VERIFIER_API")
+    ?: testVerifierApi
+val demoIssuerUrl = getProperty<String>("demoIssuerUrl")
+    ?: System.getenv("DEMO_ISSUER_URL")
+    ?: testIssuerUrl
+val demoVerifierClientId = getProperty<String>("demoVerifierClientId")
+    ?: System.getenv("DEMO_VERIFIER_CLIENT_ID")
+    ?: testVerifierClientId
+val demoVerifierLegalName = getProperty<String>("demoVerifierLegalName")
+    ?: System.getenv("DEMO_VERIFIER_LEGAL_NAME")
+    ?: testVerifierLegalName
+val demoIssuerClientId = getProperty<String>("demoIssuerClientId")
+    ?: System.getenv("DEMO_ISSUER_CLIENT_ID")
+    ?: testIssuerClientId
 
 plugins {
     id("project.android.library")

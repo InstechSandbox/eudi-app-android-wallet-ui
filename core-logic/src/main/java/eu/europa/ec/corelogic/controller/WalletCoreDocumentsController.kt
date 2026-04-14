@@ -19,6 +19,7 @@ package eu.europa.ec.corelogic.controller
 import androidx.core.net.toUri
 import eu.europa.ec.authenticationlogic.controller.authentication.DeviceAuthenticationResult
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.extension.safeAsync
 import eu.europa.ec.corelogic.config.VciConfig
 import eu.europa.ec.corelogic.config.WalletCoreConfig
@@ -205,11 +206,16 @@ class WalletCoreDocumentsControllerImpl(
     private val resourceProvider: ResourceProvider,
     private val eudiWallet: EudiWallet,
     private val walletCoreConfig: WalletCoreConfig,
+    private val logController: LogController,
     private val bookmarkDao: BookmarkDao,
     private val transactionLogDao: TransactionLogDao,
     private val revokedDocumentDao: RevokedDocumentDao,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : WalletCoreDocumentsController {
+
+    private companion object {
+        private const val TAG = "WalletCoreDocumentsController"
+    }
 
     private val genericErrorMessage
         get() = resourceProvider.genericErrorMessage()
@@ -386,6 +392,10 @@ class WalletCoreDocumentsControllerImpl(
                     vciConfig.config.issuerUrl == issuerId
                 }?.value
                 ?: openId4VciManagers.values.firstOrNull()
+
+            logController.i(TAG) {
+                "issueDocumentsByOffer issuerId=$issuerId txCodePresent=${txCode != null} selectedManagerFound=${manager != null}"
+            }
 
             require(manager != null) { documentErrorMessage }
 
@@ -598,11 +608,21 @@ class WalletCoreDocumentsControllerImpl(
         }
 
     override fun resumeOpenId4VciWithAuthorization(uri: String) {
-        for (manager in openId4VciManagers.values) {
+        logController.i(TAG) {
+            "resumeOpenId4VciWithAuthorization managers=${openId4VciManagers.size} uri=$uri"
+        }
+
+        for ((vciConfig, manager) in openId4VciManagers.entries) {
             try {
                 manager.resumeWithAuthorization(uri)
+                logController.i(TAG) {
+                    "resumeOpenId4VciWithAuthorization succeeded issuer=${vciConfig.config.issuerUrl}"
+                }
                 break
-            } catch (_: Exception) {
+            } catch (exception: Exception) {
+                logController.w(TAG) {
+                    "resumeOpenId4VciWithAuthorization failed issuer=${vciConfig.config.issuerUrl} error=${exception::class.simpleName}:${exception.message}"
+                }
             }
         }
     }
@@ -693,6 +713,9 @@ class WalletCoreDocumentsControllerImpl(
         val listener = OpenId4VciManager.OnIssueEvent { event ->
             when (event) {
                 is IssueEvent.DocumentFailed -> {
+                    logController.e(TAG) {
+                        "IssueEvent.DocumentFailed docType=${event.docType} name=${event.name} cause=${event.cause.message}"
+                    }
                     nonIssuedDocuments[event.docType] = event.name
                 }
 
@@ -703,6 +726,10 @@ class WalletCoreDocumentsControllerImpl(
                         val documentIssuanceRule = walletCoreConfig
                             .documentIssuanceConfig
                             .getRuleForDocument(documentIdentifier = offeredDocIdentifier)
+
+                        logController.i(TAG) {
+                            "IssueEvent.DocumentRequiresCreateSettings identifier=$offeredDocIdentifier policy=${documentIssuanceRule.policy} credentials=${documentIssuanceRule.numberOfCredentials}"
+                        }
 
                         event.resume(
                             eudiWallet.getDefaultCreateDocumentSettings(
@@ -715,6 +742,9 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.DocumentRequiresUserAuth -> {
+                    logController.i(TAG) {
+                        "IssueEvent.DocumentRequiresUserAuth docType=${event.docType} keys=${event.keysRequireAuth.keys.joinToString()}"
+                    }
                     launch {
                         val keyUnlockDataMap =
                             event.keysRequireAuth.mapValues { (keyAlias, secureArea) ->
@@ -739,6 +769,9 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Failure -> {
+                    logController.e(TAG) {
+                        "IssueEvent.Failure cause=${event.cause.message}"
+                    }
                     trySendBlocking(
                         IssueDocumentsPartialState.Failure(
                             errorMessage = documentErrorMessage
@@ -747,6 +780,10 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Finished -> {
+
+                    logController.i(TAG) {
+                        "IssueEvent.Finished total=$totalDocumentsToBeIssued issuedEvent=${event.issuedDocuments.size} issuedLocal=${issuedDocuments.size} deferredLocal=${deferredDocuments.size} failedLocal=${nonIssuedDocuments.size} issuedIds=${event.issuedDocuments.joinToString()}"
+                    }
 
                     if (deferredDocuments.isNotEmpty() && (prioritizeDeferred || (issuedDocuments.isEmpty()))) {
                         trySendBlocking(IssueDocumentsPartialState.DeferredSuccess(deferredDocuments))
@@ -780,14 +817,23 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.DocumentIssued -> {
+                    logController.i(TAG) {
+                        "IssueEvent.DocumentIssued documentId=${event.documentId} docType=${event.docType}"
+                    }
                     issuedDocuments[event.documentId] = event.docType
                 }
 
                 is IssueEvent.Started -> {
+                    logController.i(TAG) {
+                        "IssueEvent.Started total=${event.total}"
+                    }
                     totalDocumentsToBeIssued = event.total
                 }
 
                 is IssueEvent.DocumentDeferred -> {
+                    logController.i(TAG) {
+                        "IssueEvent.DocumentDeferred documentId=${event.documentId} docType=${event.docType}"
+                    }
                     deferredDocuments[event.documentId] = event.docType
                 }
             }

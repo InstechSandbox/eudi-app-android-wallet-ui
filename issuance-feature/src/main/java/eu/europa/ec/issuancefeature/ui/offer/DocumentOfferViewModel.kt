@@ -495,6 +495,13 @@ class DocumentOfferViewModel(
             hasDeepLink(uri)?.let {
                 when (it.type) {
 
+                    DeepLinkType.ISSUANCE -> {
+                        setState {
+                            copy(isLoading = true)
+                        }
+                        documentOfferInteractor.resumeOpenId4VciWithAuthorization(it.link.toString())
+                    }
+
                     DeepLinkType.EXTERNAL -> {
                         setEffect {
                             Effect.Navigation.DeepLink(uri)

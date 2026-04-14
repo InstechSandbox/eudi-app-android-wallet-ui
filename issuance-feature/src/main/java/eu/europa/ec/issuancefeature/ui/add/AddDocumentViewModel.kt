@@ -468,6 +468,13 @@ class AddDocumentViewModel(
 
     private fun handleDeepLink(uri: Uri, action: DeepLinkAction) {
         when (action.type) {
+            DeepLinkType.ISSUANCE -> {
+                setState {
+                    copy(isLoading = true)
+                }
+                addDocumentInteractor.resumeOpenId4VciWithAuthorization(action.link.toString())
+            }
+
             DeepLinkType.CREDENTIAL_OFFER -> {
                 getOrCreateCredentialOfferScope()
                 setEffect {

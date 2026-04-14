@@ -29,6 +29,7 @@ import eu.europa.ec.eudi.rqesui.infrastructure.EudiRQESUi
 import eu.europa.ec.eudi.rqesui.infrastructure.RemoteUri
 import eu.europa.ec.uilogic.BuildConfig
 import eu.europa.ec.uilogic.container.EudiComponentActivity
+import eu.europa.ec.uilogic.extension.cacheDeepLink
 import eu.europa.ec.uilogic.extension.openUrl
 import eu.europa.ec.uilogic.navigation.IssuanceScreens
 import eu.europa.ec.uilogic.navigation.PresentationScreens
@@ -118,12 +119,17 @@ fun handleDeepLinkAction(
         }
 
         DeepLinkType.ISSUANCE -> {
-            notify(
-                navController.context,
-                CoreActions.VCI_RESUME_ACTION,
-                bundleOf(Pair("uri", action.link.toString()))
-            )
-            return
+            if (arguments != null) {
+                navController.context.cacheDeepLink(action.link)
+                screen = IssuanceScreens.AddDocument
+            } else {
+                notify(
+                    navController.context,
+                    CoreActions.VCI_RESUME_ACTION,
+                    bundleOf(Pair("uri", action.link.toString()))
+                )
+                return
+            }
         }
 
         DeepLinkType.EXTERNAL -> {

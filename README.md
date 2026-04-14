@@ -155,6 +155,14 @@ The current smoke phase is intentionally limited: it builds the selected wallet 
 
 If the build or artifact check fails, the script exits non-zero. There is no service teardown step in this repository because the current wallet smoke phase does not start a long-running process.
 
+## Workspace-specific SD-JWT PID Note
+
+In this workspace, `DocumentIdentifier.SdJwtPid` is intentionally configured with `numberOfCredentials = 1` in both wallet flavors.
+
+This is not a placeholder and should not be increased speculatively for future-proofing. The current SD-JWT PID issuance flow returns a single credential, and the current wallet-core storage path expects the number of issuer-provided credentials to match the number of precreated pending credentials. Using a larger SD-JWT pool can therefore break issuance after the issuer has already returned success.
+
+Keep `SdJwtPid = 1` unless the end-to-end SD-JWT issuance contract changes and a verified regression test proves that a larger pending-credential pool is supported.
+
 ## Application configuration
 
 You can find instructions on how to configure the application [here](wiki/configuration.md)

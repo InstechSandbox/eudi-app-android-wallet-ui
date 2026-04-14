@@ -18,6 +18,8 @@ package eu.europa.ec.dashboardfeature.ui.dashboard
 
 import android.content.Intent
 import android.net.Uri
+import eu.europa.ec.commonfeature.config.IssuanceFlowType
+import eu.europa.ec.commonfeature.config.IssuanceUiConfig
 import eu.europa.ec.commonfeature.config.OfferUiConfig
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -297,6 +299,19 @@ class DashboardViewModel(
                                         )
                                     ),
                                     OfferUiConfig.Parser
+                                )
+                            )
+                        )
+                    }
+
+                    DeepLinkType.ISSUANCE -> {
+                        generateComposableArguments(
+                            mapOf(
+                                IssuanceUiConfig.serializedKeyName to uiSerializer.toBase64(
+                                    IssuanceUiConfig(
+                                        flowType = IssuanceFlowType.NoDocument
+                                    ),
+                                    IssuanceUiConfig.Parser
                                 )
                             )
                         )

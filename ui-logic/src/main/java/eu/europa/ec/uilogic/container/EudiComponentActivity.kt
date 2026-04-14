@@ -99,6 +99,7 @@ open class EudiComponentActivity : FragmentActivity() {
     private fun handleDeepLink(intent: Intent?, coldBoot: Boolean = false) {
         hasDeepLink(intent?.data)?.let {
             if (it.type == DeepLinkType.ISSUANCE && !coldBoot) {
+                cacheDeepLink(intent)
                 handleDeepLinkAction(
                     routerHost.getNavController(),
                     it.link

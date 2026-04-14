@@ -99,6 +99,7 @@ fun provideWalletCoreDocumentsController(
     resourceProvider: ResourceProvider,
     eudiWallet: EudiWallet,
     walletCoreConfig: WalletCoreConfig,
+    logController: LogController,
     bookmarkDao: BookmarkDao,
     transactionLogDao: TransactionLogDao,
     revokedDocumentDao: RevokedDocumentDao
@@ -107,6 +108,7 @@ fun provideWalletCoreDocumentsController(
         resourceProvider,
         eudiWallet,
         walletCoreConfig,
+        logController,
         bookmarkDao,
         transactionLogDao,
         revokedDocumentDao
