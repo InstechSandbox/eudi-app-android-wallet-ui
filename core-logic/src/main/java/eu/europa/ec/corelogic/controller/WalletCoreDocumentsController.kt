@@ -780,7 +780,6 @@ class WalletCoreDocumentsControllerImpl(
                 }
 
                 is IssueEvent.Finished -> {
-
                     logController.i(TAG) {
                         "IssueEvent.Finished total=$totalDocumentsToBeIssued issuedEvent=${event.issuedDocuments.size} issuedLocal=${issuedDocuments.size} deferredLocal=${deferredDocuments.size} failedLocal=${nonIssuedDocuments.size} issuedIds=${event.issuedDocuments.joinToString()}"
                     }

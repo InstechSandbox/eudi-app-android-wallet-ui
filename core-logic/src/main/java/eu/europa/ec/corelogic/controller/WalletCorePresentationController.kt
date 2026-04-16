@@ -16,6 +16,7 @@
 
 package eu.europa.ec.corelogic.controller
 import androidx.activity.ComponentActivity
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.authenticationlogic.model.BiometricCrypto
 import eu.europa.ec.businesslogic.extension.addOrReplace
 import eu.europa.ec.businesslogic.extension.safeAsync
@@ -29,7 +30,10 @@ import eu.europa.ec.eudi.iso18013.transfer.response.RequestProcessor
 import eu.europa.ec.eudi.iso18013.transfer.response.RequestedDocument
 import eu.europa.ec.eudi.iso18013.transfer.toKotlinResult
 import eu.europa.ec.eudi.wallet.EudiWallet
+import eu.europa.ec.eudi.wallet.document.IssuedDocument
 import eu.europa.ec.eudi.wallet.document.DocumentExtensions.getDefaultKeyUnlockData
+import eu.europa.ec.eudi.wallet.document.format.MsoMdocFormat
+import eu.europa.ec.eudi.wallet.document.format.SdJwtVcFormat
 import eu.europa.ec.resourceslogic.provider.ResourceProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
@@ -198,6 +202,7 @@ interface WalletCorePresentationController {
 class WalletCorePresentationControllerImpl(
     private val eudiWallet: EudiWallet,
     private val resourceProvider: ResourceProvider,
+    private val logController: LogController,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : WalletCorePresentationController {
 
@@ -261,6 +266,21 @@ class WalletCorePresentationControllerImpl(
                     requestedDocumentData.getOrNull()?.let { requestedDocuments ->
 
                         processedRequest = requestedDocuments
+
+                        logController.i {
+                            buildString {
+                                append("OpenId4VP request received: ")
+                                append("requestedDocuments=")
+                                append(requestedDocuments.requestedDocuments.joinToString(prefix = "[", postfix = "]") { requestedDocument ->
+                                    val requestedItems = requestedDocument.requestedItems.keys.joinToString(prefix = "[", postfix = "]") { item ->
+                                        item.toString()
+                                    }
+                                    "{documentId=${requestedDocument.documentId}, requestedItems=$requestedItems, readerCommonName=${requestedDocument.readerAuth?.readerCommonName}, readerVerified=${requestedDocument.readerAuth?.isVerified}}"
+                                })
+                                append(", issuedDocuments=")
+                                append(currentIssuedDocumentsSummary())
+                            }
+                        }
 
                         verifierName = requestedDocuments.requestedDocuments
                             .firstOrNull()?.readerAuth?.readerCommonName
@@ -497,4 +517,15 @@ class WalletCorePresentationControllerImpl(
         }
         return block()
     }
+
+    private fun currentIssuedDocumentsSummary(): String =
+        eudiWallet.getDocuments()
+            .filterIsInstance<IssuedDocument>()
+            .joinToString(prefix = "[", postfix = "]") { document ->
+                val format = when (val value = document.format) {
+                    is SdJwtVcFormat -> "sd-jwt:${value.vct}"
+                    is MsoMdocFormat -> "mdoc:${value.docType}"
+                }
+                "{id=${document.id}, format=$format}"
+            }
 }

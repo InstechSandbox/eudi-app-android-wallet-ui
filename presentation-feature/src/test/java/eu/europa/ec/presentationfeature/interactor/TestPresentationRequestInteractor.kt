@@ -16,6 +16,7 @@
 
 package eu.europa.ec.presentationfeature.interactor
 
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.config.PresentationMode
 import eu.europa.ec.commonfeature.config.RequestUriConfig
@@ -75,6 +76,9 @@ class TestPresentationRequestInteractor {
     @Mock
     private lateinit var uuidProvider: UuidProvider
 
+    @Mock
+    private lateinit var logController: LogController
+
     private lateinit var interactor: PresentationRequestInteractor
 
     private lateinit var closeable: AutoCloseable
@@ -87,7 +91,8 @@ class TestPresentationRequestInteractor {
             resourceProvider = resourceProvider,
             walletCorePresentationController = walletCorePresentationController,
             walletCoreDocumentsController = walletCoreDocumentsController,
-            uuidProvider = uuidProvider
+            uuidProvider = uuidProvider,
+            logController = logController,
         )
 
         whenever(resourceProvider.genericErrorMessage()).thenReturn(mockedGenericErrorMessage)

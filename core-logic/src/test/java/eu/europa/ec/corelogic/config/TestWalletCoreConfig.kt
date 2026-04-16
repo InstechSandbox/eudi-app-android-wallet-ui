@@ -28,7 +28,7 @@ class TestWalletCoreConfig {
     private val context: Context = mock()
 
     @Test
-    fun `SdJwt PID uses a single credential while mdoc PID keeps the pooled one-time-use rule`() {
+    fun `SdJwt PID stays reusable while mdoc PID keeps the pooled one-time-use rule`() {
         val config = WalletCoreConfigImpl(context)
 
         val mdocRule = config.documentIssuanceConfig.getRuleForDocument(DocumentIdentifier.MdocPid)
@@ -36,7 +36,7 @@ class TestWalletCoreConfig {
 
         assertEquals(CredentialPolicy.OneTimeUse, mdocRule.policy)
         assertEquals(60, mdocRule.numberOfCredentials)
-        assertEquals(CredentialPolicy.OneTimeUse, sdJwtRule.policy)
+        assertEquals(CredentialPolicy.RotateUse, sdJwtRule.policy)
         assertEquals(1, sdJwtRule.numberOfCredentials)
     }
 }

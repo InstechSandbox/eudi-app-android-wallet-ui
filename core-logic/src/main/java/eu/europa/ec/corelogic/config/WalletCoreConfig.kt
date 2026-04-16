@@ -178,9 +178,9 @@ interface WalletCoreConfig {
      *   - Keys are [DocumentIdentifier] objects representing specific document types.
      *   - Values are [DocumentIssuanceRule] objects defining the policy and number of credentials for that document.
      *
-     * For example:
-     * - [DocumentIdentifier.MdocPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
-     * - [DocumentIdentifier.SdJwtPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
+    * For example:
+    * - [DocumentIdentifier.MdocPid] is configured for [CredentialPolicy.OneTimeUse] with 10 credentials.
+    * - [DocumentIdentifier.SdJwtPid] is configured for [CredentialPolicy.RotateUse] with 1 credential.
      *
      * Any document type not listed in `documentSpecificRules` will use the `defaultRule`.
      */

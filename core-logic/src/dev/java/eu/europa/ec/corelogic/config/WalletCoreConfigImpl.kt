@@ -163,7 +163,7 @@ internal class WalletCoreConfigImpl(
                     numberOfCredentials = 60
                 ),
                 DocumentIdentifier.SdJwtPid to DocumentIssuanceRule(
-                    policy = CredentialPolicy.OneTimeUse,
+                    policy = CredentialPolicy.RotateUse,
                     numberOfCredentials = 1
                 ),
             )

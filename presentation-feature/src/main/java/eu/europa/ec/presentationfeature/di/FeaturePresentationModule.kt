@@ -16,6 +16,7 @@
 
 package eu.europa.ec.presentationfeature.di
 
+import eu.europa.ec.businesslogic.controller.log.LogController
 import eu.europa.ec.businesslogic.provider.UuidProvider
 import eu.europa.ec.commonfeature.interactor.DeviceAuthenticationInteractor
 import eu.europa.ec.corelogic.controller.WalletCoreDocumentsController
@@ -41,6 +42,7 @@ class FeaturePresentationModule
 fun providePresentationRequestInteractor(
     resourceProvider: ResourceProvider,
     uuidProvider: UuidProvider,
+    logController: LogController,
     walletCoreDocumentsController: WalletCoreDocumentsController,
     @ScopeId(name = PRESENTATION_SCOPE_ID) walletCorePresentationController: WalletCorePresentationController,
 ): PresentationRequestInteractor {
@@ -48,7 +50,8 @@ fun providePresentationRequestInteractor(
         resourceProvider,
         uuidProvider,
         walletCorePresentationController,
-        walletCoreDocumentsController
+        walletCoreDocumentsController,
+        logController,
     )
 }
 
