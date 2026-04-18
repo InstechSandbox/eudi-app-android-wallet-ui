@@ -23,6 +23,16 @@ plugins {
     id("project.android.application.compose")
 }
 
+val releaseSigningKeyAlias =
+    getProperty<String>("androidKeyAlias", "local.signing.properties")
+        ?: getProperty("androidKeyAlias")
+        ?: System.getenv("ANDROID_KEY_ALIAS")
+
+val releaseSigningPassword =
+    getProperty<String>("androidKeyPassword", "local.signing.properties")
+        ?: getProperty("androidKeyPassword")
+        ?: System.getenv("ANDROID_KEY_PASSWORD")
+
 android {
 
     signingConfigs {
@@ -30,10 +40,9 @@ android {
 
             storeFile = file("${rootProject.projectDir}/sign")
 
-            keyAlias = getProperty("androidKeyAlias") ?: System.getenv("ANDROID_KEY_ALIAS")
-            keyPassword = getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
-            storePassword =
-                getProperty("androidKeyPassword") ?: System.getenv("ANDROID_KEY_PASSWORD")
+            keyAlias = releaseSigningKeyAlias
+            keyPassword = releaseSigningPassword
+            storePassword = releaseSigningPassword
 
             enableV2Signing = true
         }

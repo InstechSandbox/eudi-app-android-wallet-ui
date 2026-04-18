@@ -83,6 +83,21 @@ Notes:
 - If `adb` is not on your `PATH`, use the full path to the Android SDK platform-tools `adb` binary instead.
 - The `-r` flag reinstalls the app while keeping app data when possible, and `-d` allows version-code downgrade for local debug builds.
 
+### Local demoRelease signing preflight
+
+For the cloud tester build, use `demoRelease`. The repository now supports a dedicated untracked signing properties file so local release builds do not depend on remembering ephemeral shell exports.
+
+1. Copy `local.signing.properties.example` to `local.signing.properties`.
+2. Fill in `androidKeyAlias` and `androidKeyPassword` with the local release signing values that match the repo-root `sign` keystore.
+3. Run the preflight before packaging:
+
+```bash
+./preflight-demo-release-signing.sh
+./gradlew :app:assembleDemoRelease --console=plain
+```
+
+If the preflight reports that the alias or password do not match `sign`, fix the local signing properties or replace the local `sign` keystore before attempting `demoRelease`. This check is intentionally earlier and clearer than the default Gradle failure at `packageDemoRelease`.
+
 To run the App on a device, firstly you must connect your device with the Android Studio, and then go to Run -> Run 'app'.
 To run the App on an emulator, simply go to Run -> Run 'app'.
 

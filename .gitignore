@@ -44,6 +44,8 @@ captures/
 
 # Sign key
 sign
+sign.backup.*
+local.signing.properties
 
 # fastlane
 .env.demo
