@@ -1,6 +1,9 @@
 name: Publish Test APK
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       release_tag:
@@ -26,12 +29,42 @@ jobs:
     env:
       ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+      INPUT_RELEASE_NAME: ${{ inputs.release_name }}
+      INPUT_PRERELEASE: ${{ inputs.prerelease }}
 
     steps:
       - name: Check out wallet repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Resolve release metadata
+        id: release_meta
+        run: |
+          set -euo pipefail
+
+          short_sha="$(git rev-parse --short=12 HEAD)"
+          version_code="$(sed -n 's/^[[:space:]]*versionCode = \([0-9][0-9]*\).*/\1/p' app/build.gradle.kts | head -n 1)"
+
+          if [[ -z "$version_code" ]]; then
+            echo "Unable to resolve versionCode from app/build.gradle.kts" >&2
+            exit 1
+          fi
+
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            release_tag="$INPUT_RELEASE_TAG"
+            release_name="${INPUT_RELEASE_NAME:-$INPUT_RELEASE_TAG}"
+            prerelease="$INPUT_PRERELEASE"
+          else
+            release_tag="demo-main-r${GITHUB_RUN_NUMBER}-${short_sha}"
+            release_name="Demo main prerelease r${GITHUB_RUN_NUMBER} (${short_sha}, vc${version_code})"
+            prerelease="true"
+          fi
+
+          echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
+          echo "release_name=$release_name" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$prerelease" >> "$GITHUB_OUTPUT"
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -64,7 +97,9 @@ jobs:
 
       - name: Generate Android compliance bundle
         env:
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          RELEASE_TAG: ${{ steps.release_meta.outputs.release_tag }}
+          RELEASE_NAME: ${{ steps.release_meta.outputs.release_name }}
+          RELEASE_PRERELEASE: ${{ steps.release_meta.outputs.prerelease }}
         run: |
           set -euo pipefail
 
@@ -82,11 +117,11 @@ jobs:
           # Android Release Record
 
           - Release tag: ${RELEASE_TAG}
-          - Release name: ${{ inputs.release_name || inputs.release_tag }}
+          - Release name: ${RELEASE_NAME}
           - Repository: $(git remote get-url origin)
           - Commit: $(git rev-parse HEAD)
           - Build date: $(date -u +%Y-%m-%dT%H:%M:%SZ)
-          - Distribution status: proof-of-concept tester prerelease
+          - Distribution status: proof-of-concept tester $( [[ "$RELEASE_PRERELEASE" == "true" ]] && printf 'prerelease' || printf 'release' )
 
           ## Included notices
 
@@ -101,18 +136,17 @@ jobs:
 
       - name: Archive compliance bundle
         run: |
-          bundle_dir=".local/mobile-compliance/${{ inputs.release_tag }}-android"
+          bundle_dir=".local/mobile-compliance/${{ steps.release_meta.outputs.release_tag }}-android"
           cd .local/mobile-compliance
-          zip -r "${{ inputs.release_tag }}-android-compliance.zip" "${{ inputs.release_tag }}-android"
+          zip -r "${{ steps.release_meta.outputs.release_tag }}-android-compliance.zip" "${{ steps.release_meta.outputs.release_tag }}-android"
           cd - >/dev/null
-          echo "COMPLIANCE_ZIP=.local/mobile-compliance/${{ inputs.release_tag }}-android-compliance.zip" >> "$GITHUB_ENV"
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ inputs.release_tag }}
-          name: ${{ inputs.release_name || inputs.release_tag }}
-          prerelease: ${{ inputs.prerelease }}
+          tag_name: ${{ steps.release_meta.outputs.release_tag }}
+          name: ${{ steps.release_meta.outputs.release_name }}
+          prerelease: ${{ steps.release_meta.outputs.prerelease == 'true' }}
           files: |
             app/build/outputs/apk/demo/release/*.apk
-            ${{ env.COMPLIANCE_ZIP }}
+            .local/mobile-compliance/${{ steps.release_meta.outputs.release_tag }}-android-compliance.zip
