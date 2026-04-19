@@ -58,8 +58,8 @@ jobs:
             prerelease="$INPUT_PRERELEASE"
           else
             release_tag="demo-main-r${GITHUB_RUN_NUMBER}-${short_sha}"
-            release_name="Demo main prerelease r${GITHUB_RUN_NUMBER} (${short_sha}, vc${version_code})"
-            prerelease="true"
+            release_name="Demo main release r${GITHUB_RUN_NUMBER} (${short_sha}, vc${version_code})"
+            prerelease="false"
           fi
 
           echo "release_tag=$release_tag" >> "$GITHUB_OUTPUT"
