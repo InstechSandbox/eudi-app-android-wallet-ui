@@ -23,6 +23,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.create
 import org.gradle.kotlin.dsl.dependencies
 import project.convention.logic.addConfigField
+import project.convention.logic.AppFlavor
 import project.convention.logic.config.LibraryModule
 import project.convention.logic.config.LibraryPluginConfig
 import project.convention.logic.configureFlavors
@@ -141,7 +142,23 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                     manifestPlaceholders["rqesDocRetrievalScheme"] = rqesDocRetrievalScheme
                     manifestPlaceholders["rqesDocRetrievalHost"] = rqesDocRetrievalHost
                 }
-                configureFlavors(this)
+                configureFlavors(this) { flavor ->
+                    val flavorIssueAuthorizationScheme = when (flavor) {
+                        AppFlavor.Dev -> "$openId4VciAuthorizationScheme.dev"
+                        AppFlavor.Demo -> openId4VciAuthorizationScheme
+                    }
+
+                    addConfigField(
+                        "ISSUE_AUTHORIZATION_SCHEME",
+                        flavorIssueAuthorizationScheme
+                    )
+                    addConfigField(
+                        "ISSUE_AUTHORIZATION_DEEPLINK",
+                        "$flavorIssueAuthorizationScheme://$openId4VciAuthorizationHost"
+                    )
+                    manifestPlaceholders["openId4VciAuthorizationScheme"] =
+                        flavorIssueAuthorizationScheme
+                }
                 configureGradleManagedDevices(this)
             }
             extensions.configure<LibraryAndroidComponentsExtension> {

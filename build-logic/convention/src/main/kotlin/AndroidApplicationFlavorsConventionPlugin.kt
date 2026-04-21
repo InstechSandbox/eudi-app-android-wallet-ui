@@ -18,13 +18,25 @@ import com.android.build.api.dsl.ApplicationExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import project.convention.logic.AppFlavor
 import project.convention.logic.configureFlavors
 
 class AndroidApplicationFlavorsConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             extensions.configure<ApplicationExtension> {
-                configureFlavors(this)
+                val openId4VciAuthorizationScheme = "eu.europa.ec.euidi"
+                val openId4VciAuthorizationHost = "authorization"
+
+                configureFlavors(this) { flavor ->
+                    manifestPlaceholders["openId4VciAuthorizationScheme"] =
+                        when (flavor) {
+                            AppFlavor.Dev -> "$openId4VciAuthorizationScheme.dev"
+                            AppFlavor.Demo -> openId4VciAuthorizationScheme
+                        }
+                    manifestPlaceholders["openId4VciAuthorizationHost"] =
+                        openId4VciAuthorizationHost
+                }
             }
         }
     }
