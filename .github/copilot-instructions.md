@@ -5,7 +5,7 @@
 - This repo owns the Android wallet implementation used as the local reference client.
 - Keep wallet changes focused on interoperability, local trust, or explicitly approved wallet workstreams.
 - When wallet behaviour, trust material, or local integration behaviour changes, update `project-docs` in the same task.
-- Default Git flow in this workspace is local `wip/<stream>` commits promoted directly with `git push origin HEAD:main`; do not publish remote `wip/<stream>` branches unless explicitly requested.
+- Default Git flow in this workspace is local `wip/<stream>` commits promoted into protected default branches through reviewed pull requests; do not publish remote `wip/<stream>` branches unless explicitly requested.
 
 ## Local Checks
 
